@@ -1,0 +1,24 @@
+/* src/index.css */
+:root {
+  --bg: #ffffff;
+  color-scheme: light; /* Forces white background browser-wide */
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #ffffff !important;
+  overflow-x: hidden;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Ensure buttons are always visible with black text/borders */
+button {
+  transition: none !important;
+  opacity: 1 !important;
+}
