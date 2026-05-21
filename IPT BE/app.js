@@ -214,16 +214,30 @@ app.get('/api/leave', protect, async (req, res) => {
 /**
  * TASK 2.6: Admin Report Management
  */
+// --- ADMIN / REPORT ROUTES ---
+
+/**
+ * TASK 2.6: Admin Report Management
+ */
 app.get('/api/admin/reports', protect, authorize('Admin'), async (req, res) => {
     try {
         const report = await LeaveRequest.aggregate([
+            {
+                // Sort by the latest updated requests first so we pull the most relevant record details
+                $sort: { updatedAt: -1 }
+            },
             {
                 $group: {
                     _id: "$employeeId",
                     totalRequests: { $sum: 1 },
                     approvedCount: { $sum: { $cond: [{ $eq: ["$status", "Approved"] }, 1, 0] } },
                     rejectedCount: { $sum: { $cond: [{ $eq: ["$status", "Rejected"] }, 1, 0] } },
-                    pendingCount: { $sum: { $cond: [{ $eq: ["$status", "Pending"] }, 1, 0] } }
+                    pendingCount: { $sum: { $cond: [{ $eq: ["$status", "Pending"] }, 1, 0] } },
+                    // Grab the details of the latest leave request submitted by the employee
+                    latestReason: { $first: "$reason" },
+                    startDate: { $first: "$startDate" },
+                    endDate: { $first: "$endDate" },
+                    updatedAt: { $first: "$updatedAt" }
                 }
             },
             {
@@ -237,13 +251,18 @@ app.get('/api/admin/reports', protect, authorize('Admin'), async (req, res) => {
             { $unwind: "$user" },
             {
                 $project: {
-                    _id: 0,
+                    _id: 1,
                     employeeName: "$user.fullName",
+                    userEmail: "$user.email", // Now sending the actual email address
                     department: "$user.department",
                     totalRequests: 1,
                     approvedCount: 1,
                     pendingCount: 1,
-                    rejectedCount: 1
+                    rejectedCount: 1,
+                    latestReason: 1,
+                    startDate: 1,
+                    endDate: 1,
+                    updatedAt: 1
                 }
             }
         ]);
