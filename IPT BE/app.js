@@ -261,8 +261,8 @@ app.get('/api/users', protect, authorize('Supervisor', 'Admin'), async (req, res
 if (process.env.NODE_ENV !== 'test') {
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
-        console.log(`✅ Server running on port ${PORT}`);
-        console.log(`📝 Swagger Docs available at route /api-docs`);
+        console.log(`✅ Server running on: http://localhost:${PORT}`);
+        console.log(`📝 Swagger Docs available at: http://localhost:${PORT}/api-docs`);
     });
 }
 
