@@ -13,7 +13,7 @@ const LeaveType = require('./models/LeaveType');
 const app = express();
 
 // --- MIDDLEWARE CONFIGURATION ---
-app.use(cors()); // Allowed once at the top to prevent duplicate identifier crashes
+app.use(cors()); 
 app.use(express.json());
 
 
@@ -214,11 +214,6 @@ app.get('/api/leave', protect, async (req, res) => {
 /**
  * TASK 2.6: Admin Report Management
  */
-// --- ADMIN / REPORT ROUTES ---
-
-/**
- * TASK 2.6: Admin Report Management
- */
 app.get('/api/admin/reports', protect, authorize('Admin'), async (req, res) => {
     try {
         const report = await LeaveRequest.aggregate([
@@ -253,7 +248,7 @@ app.get('/api/admin/reports', protect, authorize('Admin'), async (req, res) => {
                 $project: {
                     _id: 1,
                     employeeName: "$user.fullName",
-                    userEmail: "$user.email", // Now sending the actual email address
+                    userEmail: "$user.email", 
                     department: "$user.department",
                     totalRequests: 1,
                     approvedCount: 1,
@@ -268,6 +263,21 @@ app.get('/api/admin/reports', protect, authorize('Admin'), async (req, res) => {
         ]);
         res.json(report);
     } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+/**
+ * NEW ENDPOINT: Fetch complete leave list history for an individual employee
+ */
+app.get('/api/admin/reports/employee/:employeeId', protect, authorize('Admin'), async (req, res) => {
+    try {
+        const employeeLeaves = await LeaveRequest.find({ employeeId: req.params.employeeId })
+            .populate('leaveTypeId', 'type')
+            .sort({ startDate: -1 }); // Sort to display the newest records at top
+            
+        res.json(employeeLeaves);
+    } catch (err) { 
+        res.status(500).json({ error: err.message }); 
+    }
 });
 
 // --- USER MANAGEMENT ---

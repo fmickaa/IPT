@@ -8,6 +8,7 @@ const Admin = () => {
   
   // State for managing active UI view layer selection
   const [selectedLeave, setSelectedLeave] = useState(null);
+  const [employeeHistory, setEmployeeHistory] = useState([]);
 
   // Core function to pull aggregated table data from backend pipeline
   const fetchAdminData = async () => {
@@ -103,6 +104,7 @@ const Admin = () => {
       if (response.ok) {
         alert("User records successfully purged from system storage.");
         setSelectedLeave(null); 
+        setEmployeeHistory([]);
         fetchAdminData(); 
       } else {
         const errData = await response.json();
@@ -126,7 +128,7 @@ const Admin = () => {
   if (selectedLeave) {
     return (
       <div style={{
-        maxWidth: '800px', 
+        maxWidth: '850px', 
         margin: '40px auto', 
         padding: '20px 40px', 
         fontFamily: '"Segoe UI", Roboto, Arial, sans-serif',
@@ -144,7 +146,7 @@ const Admin = () => {
 
         {/* Dynamic Context Interactivity link to swap back layer */}
         <button 
-          onClick={() => setSelectedLeave(null)}
+          onClick={() => { setSelectedLeave(null); setEmployeeHistory([]); }}
           style={{
             background: 'none',
             border: 'none',
@@ -161,68 +163,82 @@ const Admin = () => {
           ← Back to Inbox
         </button>
 
-        {/* Dynamic Detail Panel Box */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
-          <div>
-            <h2 style={{ margin: '0 0 15px 0', fontSize: '22px', fontWeight: '500', color: '#212529' }}>
-              Vacation Leave Request
-            </h2>
-            
-            {/* Real Active connected data elements mapped from user schema query */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '50%',
-                backgroundColor: '#fff',
-                border: `1px solid ${getStatusColor(selectedLeave.status)}`,
-                color: getStatusColor(selectedLeave.status),
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: 'bold',
-                fontSize: '16px'
-              }}>
-                {selectedLeave.name.charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <div style={{ fontSize: '14px', fontWeight: '600', color: '#212529' }}>{selectedLeave.email}</div>
-                <div style={{ fontSize: '11px', color: '#868e96' }}>to me  {selectedLeave.dateSubmitted}</div>
+        {/* Dynamic Profile/Employee Context Header Detail Block */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              width: '45px',
+              height: '45px',
+              borderRadius: '50%',
+              backgroundColor: '#f1f3f5',
+              border: '1px solid #ced4da',
+              color: '#495057',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 'bold',
+              fontSize: '18px'
+            }}>
+              {selectedLeave.name.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 'bold', color: '#212529' }}>{selectedLeave.name}</h2>
+              <div style={{ fontSize: '13px', color: '#6c757d' }}>
+                {selectedLeave.email} | <strong>{selectedLeave.department} Dept</strong>
               </div>
             </div>
           </div>
-
-          {/* Real Dynamically Driven Status Indicator */}
-          <span style={{
-            backgroundColor: getStatusColor(selectedLeave.status),
-            color: '#fff',
-            padding: '6px 16px',
-            borderRadius: '4px',
-            fontWeight: 'bold',
-            fontSize: '14px'
-          }}>
-            {selectedLeave.status}
-          </span>
         </div>
 
-        {/* Dynamic Date Block Calculations */}
-        <div style={{
-          backgroundColor: '#f1f3f5',
-          borderRadius: '4px',
-          padding: '10px',
-          textAlign: 'center',
-          fontSize: '13px',
-          color: '#495057',
-          fontWeight: '500',
-          marginBottom: '35px'
-        }}>
-          Requested Dates: {selectedLeave.dates} ({selectedLeave.days} days)
-        </div>
+        <h3 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '15px', color: '#495057', borderBottom: '1px solid #f1f3f5', paddingBottom: '8px' }}>
+          My Leave History
+        </h3>
 
-        {/* Live dynamic reason block mapped directly from database text strings */}
-        <div style={{ textAlign: 'center', color: '#495057', fontSize: '15px', marginBottom: '60px', fontStyle: 'italic' }}>
-          Reason: {selectedLeave.reason}
-        </div>
+        {/* Dynamic Complete Leave History Table Layout Grid */}
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', marginBottom: '40px' }}>
+          <thead>
+            <tr style={{ backgroundColor: '#f8f9fa', borderBottom: '2px solid #dee2e6', textAlign: 'left' }}>
+              <th style={{ padding: '12px', color: '#495057', fontWeight: '600' }}>Type</th>
+              <th style={{ padding: '12px', color: '#495057', fontWeight: '600' }}>Period</th>
+              <th style={{ padding: '12px', color: '#495057', fontWeight: '600' }}>Reason</th>
+              <th style={{ padding: '12px', color: '#495057', fontWeight: '600', textAlign: 'center' }}>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {employeeHistory.map((leave, index) => {
+              const start = new Date(leave.startDate).toLocaleDateString();
+              const end = new Date(leave.endDate).toLocaleDateString();
+              return (
+                <tr key={leave._id || index} style={{ borderBottom: '1px solid #dee2e6' }}>
+                  <td style={{ padding: '12px', fontWeight: '500', color: '#212529' }}>
+                    {leave.leaveTypeId?.type || 'General Leave'}
+                  </td>
+                  <td style={{ padding: '12px', color: '#495057' }}>
+                    {start} - {end}
+                  </td>
+                  <td style={{ padding: '12px', color: '#74788d', fontStyle: 'italic' }}>
+                    {leave.reason || 'No reason specified'}
+                  </td>
+                  <td style={{ 
+                    padding: '12px', 
+                    fontWeight: 'bold', 
+                    textAlign: 'center',
+                    color: getStatusColor(leave.status)
+                  }}>
+                    {leave.status.toUpperCase()}
+                  </td>
+                </tr>
+              );
+            })}
+            {employeeHistory.length === 0 && (
+              <tr>
+                <td colSpan="4" style={{ padding: '30px', textAlign: 'center', color: '#868e96' }}>
+                  No active historical requests found for this employee user.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
 
         {/* Destructive Mutation Component Node */}
         <div style={{ borderTop: '1px solid #dee2e6', paddingTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -324,7 +340,25 @@ const Admin = () => {
           {reports.map((u, index) => (
             <tr 
               key={`${u.id}-${index}`} 
-              onClick={() => setSelectedLeave(u)} 
+              onClick={async () => {
+                setSelectedLeave(u);
+                try {
+                  const token = localStorage.getItem('token');
+                  const response = await fetch(`http://localhost:3000/api/admin/reports/employee/${u.id}`, {
+                    method: 'GET',
+                    headers: {
+                      'Authorization': `Bearer ${token}`,
+                      'Content-Type': 'application/json'
+                    }
+                  });
+                  if (response.ok) {
+                    const historyData = await response.json();
+                    setEmployeeHistory(historyData);
+                  }
+                } catch (error) {
+                  console.error("Error fetching employee leave history:", error);
+                }
+              }} 
               style={{ 
                 borderBottom: '1px solid #f1f3f5',
                 cursor: 'pointer',

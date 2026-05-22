@@ -1,9 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import Supervisor from './pages/Supervisor';
-import Admin from './pages/Admin';
+import Login from "./pages/login";
+import Dashboard from "./pages/dashboard";
+import Supervisor from "./pages/supervisor";
+import Admin from "./pages/admin";
 
 function App() {
   return (
